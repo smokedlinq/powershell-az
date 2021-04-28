@@ -6,7 +6,7 @@ PowerShell module for handling AzureCLI command output more like a native PowerS
 
 Replaces the `az` command with an alias to `Invoke-AzCommand` that changes the behavior of `az` from the AzureCLI in the following ways:
 
-- Output is parsed as json unless the `-o|--output` parameter is specified as something other than json|jsonc and the `-h|--help` parameter is not specified
+- Output is parsed as json unless the `-o|--output` parameter is specified as something other than `json|jsonc` and the `-h|--help` parameter is not specified
 - Error stream output is parsed into `Write-Warning`, `Write-Error`, `Write-Verbose`, and `Write-Debug` streams, progress bars are ignored
 - Automatically injects the `--verbose` parameter if `$VerbosePreference` is not `SilentlyContinue`
 - Automatically injects the `--debug` parameter is `$DebugPreference` is not `SilentlyContinue`
