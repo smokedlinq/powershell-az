@@ -108,19 +108,21 @@ function Invoke-AzCommand {
                     }
                 }
             }
-            
-            if ($StreamMessages) {
-                if (!$LastStreamType) {
-                    $LastStreamType = 'ERROR'
-                }
-                & $StreamConverters[$LastStreamType] $($StreamMessages | Out-String)
-            }
         } finally {
-            $DebugPreference = $_DebugPreference
-            $VerbosePreference = $_VerbosePreference
+            try {
+                if ($StreamMessages) {
+                    if (!$LastStreamType) {
+                        $LastStreamType = 'ERROR'
+                    }
+                    & $StreamConverters[$LastStreamType] $($StreamMessages | Out-String)
+                }
+            } finally {
+                $DebugPreference = $_DebugPreference
+                $VerbosePreference = $_VerbosePreference
 
-            if ($env:GITHUB_ACTIONS) {
-                Write-Host '::endgroup::'
+                if ($env:GITHUB_ACTIONS) {
+                    Write-Host '::endgroup::'
+                }
             }
         }
     }
