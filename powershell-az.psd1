@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.0.4'
+    ModuleVersion = '0.0.5'
     RootModule = 'powershell-az.psm1'
     GUID = 'efe1acda-f1e4-4b28-80b3-6417a87fd9d6'
     Author = 'https://github.com/smokedlinq'

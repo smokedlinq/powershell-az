@@ -89,17 +89,13 @@ function Invoke-AzCommand {
                         $IsProgress = $Message -match '^(Alive\[|Finished\[)'
                         
                         if (!$IsProgress) {
-                            if (!$StreamType) {
-                                $StreamMessages += $Message
-                            } elseif ($StreamType -and !$StreamMessages) {
-                                & $StreamConverters[$StreamType] $($Message)
-                            } elseif ($LastStreamType -and $StreamType -and $StreamType -ne $LastStreamType -and $StreamMessages) {
+                            Write-Host "StreamType=[$StreamType] Message=[$Message]"
+                            if ($LastStreamType -and $StreamType -and $StreamType -ne $LastStreamType -and $StreamMessages) {
                                 & $StreamConverters[$LastStreamType] $($StreamMessages | Out-String)
                                 $StreamMessages = @()
-                                & $StreamConverters[$StreamType] $($Message)
-                            } else {
-                                $StreamMessages += $Message
-                            }
+                            } 
+
+                            $StreamMessages += $Message
 
                             if ($StreamType) {
                                 $LastStreamType = $StreamType
