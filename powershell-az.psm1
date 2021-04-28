@@ -163,6 +163,36 @@ function ConvertTo-AzJson {
     }
 }
 
+function ConvertTo-AzJsonFile {
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory, Position=0, ValueFromPipeline)]
+        $InputObject,
+
+        [ValidateNotNullOrEmpty()]
+        [string] $Path = $([System.IO.Path]::GetTempFileName()),
+
+        [ValidateRange(1, 100)]
+        [int] $Depth = 100,
+
+        [switch] $AsArray = $false
+    )
+
+    begin {
+        $Items = @()
+    }
+
+    process {
+        $Items += $InputObject
+    }
+
+    end {
+        $Items | ConvertTo-Json -AsArray:$AsArray -Depth $Depth | Out-File -FilePath $Path -Encoding utf8
+        "@$Path"
+    }
+}
+
 function ConvertTo-AzDeploymentParameters {
     [CmdletBinding()]
     param

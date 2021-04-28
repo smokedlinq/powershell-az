@@ -14,7 +14,7 @@ Replaces the `az` command with an alias to `Invoke-AzCommand` that changes the b
 
 ## ConvertTo-AzJson
 
-Converts an array, object, or hashtable to JSON and encodes it for use with the `az deployment` parameter `-p|--parameters`.
+Converts an array, object, or hashtable to JSON and encodes it for use with the `az` parameters that take JSON input.
 
 ```powershell
 az deployment group create -g {} -f {} `
@@ -23,6 +23,18 @@ az deployment group create -g {} -f {} `
 az deployment group create -g {} -f {} `
   -p param1=$(@{x=1},@{x=2} | ConvertTo-AzJson -AsArray)
 ```
+
+## ConvertTo-AzJsonFile
+
+Converts an array, object, or hashtable to JSON and encodes it for use with the `az` parameters that take JSON input from a file.
+
+```powershell
+az rest -m POST -u {} -b $(@{x=1;y=2} | ConvertTo-AzJsonFile)
+
+az rest -m POST -u {} -b $(@{x=1},@{x=2} | ConvertTo-AzJsonFile -AsArray)
+```
+
+*Note: If the `-Path` parameter is not specified a temporary file is used.*
 
 ## ConvertTo-AzDeploymentParameters
 
