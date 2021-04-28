@@ -138,14 +138,16 @@ function Invoke-AzCommand {
     }
 }
 
-function ConvertTo-AzDeploymentParameterObject {
+function ConvertTo-AzJson {
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, Position=0, ValueFromPipeline)]
         $InputObject,
 
         [ValidateRange(1, 100)]
-        [int] $Depth = 100
+        [int] $Depth = 100,
+
+        [switch] $AsArray = $false
     )
 
     begin {
@@ -157,30 +159,7 @@ function ConvertTo-AzDeploymentParameterObject {
     }
 
     end {
-        ($Items | ConvertTo-Json -Compress -Depth $Depth | ConvertTo-Json) -replace '^"|"$'
-    }
-}
-
-function ConvertTo-AzDeploymentParameterArray {
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory, Position=0, ValueFromPipeline)]
-        $InputObject,
-
-        [ValidateRange(1, 100)]
-        [int] $Depth = 100
-    )
-
-    begin {
-        $Items = @()
-    }
-
-    process {
-        $Items += $InputObject
-    }
-
-    end {
-        ($Items | ConvertTo-Json -AsArray -Compress -Depth $Depth | ConvertTo-Json) -replace '^"|"$'
+        ($Items | ConvertTo-Json -AsArray:$AsArray -Compress -Depth $Depth | ConvertTo-Json) -replace '^"|"$'
     }
 }
 

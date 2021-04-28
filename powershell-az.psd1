@@ -1,5 +1,5 @@
 @{
-    ModuleVersion = '0.0.2'
+    ModuleVersion = '0.0.3'
     RootModule = 'powershell-az.psm1'
     GUID = 'efe1acda-f1e4-4b28-80b3-6417a87fd9d6'
     Author = 'https://github.com/smokedlinq'
@@ -7,8 +7,7 @@
     PowerShellVersion = '7.0'
     FunctionsToExport = @(
         'Invoke-AzCommand',
-        'ConvertTo-AzDeploymentParameterObject',
-        'ConvertTo-AzDeploymentParameterArray',
+        'ConvertTo-AzJson',
         'ConvertTo-AzDeploymentParameters'
     )
     AliasesToExport = @('az')

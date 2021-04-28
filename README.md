@@ -12,22 +12,16 @@ Replaces the `az` command with an alias to `Invoke-AzCommand` that changes the b
 - Automatically injects the `--debug` parameter is `$DebugPreference` is not `SilentlyContinue`
 - Uses `Write-Host` to log the command if run from an Azure DevOps Pipeline or GitHub Actions workflow
 
-## ConvertTo-AzDeploymentParameterObject
+## ConvertTo-AzJson
 
-Converts an object or hashtable to JSON and encodes it for use with the `az deployment` parameter `-p|--parameters`.
-
-```powershell
-az deployment group create -g {} -f {} `
-  -p param1=$(@{x=1;y=2} | ConvertTo-AzDeploymentParameterObject)
-```
-
-## ConvertTo-AzDeploymentParameterArray
-
-Converts an array or pipeline of objects to JSON and encodes it for use with the `az deployment` parameter `-p|--parameters`.
+Converts an array, object, or hashtable to JSON and encodes it for use with the `az deployment` parameter `-p|--parameters`.
 
 ```powershell
 az deployment group create -g {} -f {} `
-  -p param1=$(@{x=1},@{x=2} | ConvertTo-AzDeploymentParameterArray)
+  -p param1=$(@{x=1;y=2} | ConvertTo-AzJson)
+
+az deployment group create -g {} -f {} `
+  -p param1=$(@{x=1},@{x=2} | ConvertTo-AzJson -AsArray)
 ```
 
 ## ConvertTo-AzDeploymentParameters
