@@ -48,11 +48,13 @@ function Invoke-AzCommand {
     }
 
     process {
+        $_ErrorActionPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'Continue'
         $LastStreamType = $null
         $StreamMessages = @()
         $StreamConverters = @{
             'WARNING' = { Write-Warning -Message $Args[0] }
-            'ERROR' = { Write-Error -Message $Args[0] }
+            'ERROR' = { Write-Error -Message $Args[0] -ErrorAction $_ErrorActionPreference }
             'INFO' = { Write-Verbose -Message $Args[0] }
             'DEBUG' = { Write-Debug -Message $Args[0] }
             'VERBOSE' = { Write-Verbose -Message $Args[0] }
