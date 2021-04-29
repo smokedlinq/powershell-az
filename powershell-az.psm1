@@ -94,7 +94,9 @@ function Invoke-AzCommand {
                                 $StreamMessages = @()
                             } 
 
-                            $StreamMessages += $Message
+                            if (![string]::IsNullOrWhiteSpace($Message) -or $StreamType) {
+                                $StreamMessages += $Message
+                            }
 
                             if ($StreamType) {
                                 $LastStreamType = $StreamType
