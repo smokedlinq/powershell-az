@@ -163,7 +163,7 @@ function ConvertTo-AzJson {
 }
 
 function ConvertTo-AzJsonFile {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param
     (
         [Parameter(Mandatory, Position=0, ValueFromPipeline)]
@@ -193,7 +193,7 @@ function ConvertTo-AzJsonFile {
 }
 
 function ConvertTo-AzDeploymentParameters {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess)]
     param
     (
         [Parameter(Mandatory, Position=0, ValueFromPipeline)]
