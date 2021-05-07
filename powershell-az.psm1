@@ -162,7 +162,7 @@ function ConvertTo-AzJson {
     }
 }
 
-function ConvertTo-AzJsonFile {
+function Out-AzJsonFile {
     [CmdletBinding(SupportsShouldProcess)]
     param
     (
@@ -188,11 +188,11 @@ function ConvertTo-AzJsonFile {
 
     end {
         $Items | ConvertTo-Json -AsArray:$AsArray -Depth $Depth | Out-File -FilePath $Path -Encoding utf8
-        "@$Path"
+        $Path
     }
 }
 
-function ConvertTo-AzDeploymentParameters {
+function Out-AzDeploymentParameters {
     [CmdletBinding(SupportsShouldProcess)]
     param
     (
@@ -223,6 +223,6 @@ function ConvertTo-AzDeploymentParameters {
             parameters = $Values
         } | ConvertTo-Json -Depth $Depth | Out-File -FilePath $Path -Encoding utf8
         
-        "@$Path"
+        $Path
     }
 }
