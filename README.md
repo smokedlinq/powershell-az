@@ -1,5 +1,8 @@
 # powershell-az
 
+![CI](https://github.com/smokedlinq/powershell-az/workflows/ci/badge.svg)
+[![PowerShellGallery](https://img.shields.io/powershellgallery/dt/powershell-az.svg)](https://www.powershellgallery.com/packages/powershell-az)
+
 PowerShell module for handling AzureCLI command output more like a native PowerShell command.
 
 ## Invoke-AzCommand
