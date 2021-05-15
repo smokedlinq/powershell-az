@@ -91,13 +91,9 @@ function Invoke-AzCommand {
                         $IsProgress = $Message -match '^(Alive\[|Finished\[)'
                         
                         if (!$IsProgress) {
-                            if ($LastStreamType -and $StreamType -and $StreamType -ne $LastStreamType -and $StreamMessages) {
-                                if ($StreamType -eq 'ERROR') {
-                                    $StreamErrorMessages += $Message
-                                } else {
-                                    & $StreamConverters[$LastStreamType] $($StreamMessages | Out-String)
-                                    $StreamMessages = @()
-                                }
+                            if ($LastStreamType -and $StreamType -and $StreamType -ne $LastStreamType -and $StreamMessages -and $LastStreamType -ne 'ERROR') {
+                                & $StreamConverters[$LastStreamType] $($StreamMessages | Out-String)
+                                $StreamMessages = @()
                             } 
 
                             if (!$StreamType -or $StreamType -ne 'ERROR') {
