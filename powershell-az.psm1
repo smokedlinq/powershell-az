@@ -51,10 +51,10 @@ function Invoke-AzCommand {
         $_ErrorActionPreference = $ErrorActionPreference
         $ErrorActionPreference = 'Continue'
         $LastStreamType = $null
+        $StreamErrorMessages = @()
         $StreamMessages = @()
         $StreamConverters = @{
             'WARNING' = { Write-Warning -Message $Args[0] }
-            'ERROR' = { Write-Error -Message $Args[0] -ErrorAction $_ErrorActionPreference }
             'INFO' = { Write-Verbose -Message $Args[0] }
             'DEBUG' = { Write-Debug -Message $Args[0] }
             'VERBOSE' = { Write-Verbose -Message $Args[0] }
@@ -65,7 +65,7 @@ function Invoke-AzCommand {
                 $IsErrorRecord = $_ -is [System.Management.Automation.ErrorRecord]
 
                 if (!$IsErrorRecord) {
-                    if ($StreamMessages) {
+                    if ($StreamMessages -and $LastStreamType -ne 'ERROR') {
                         & $StreamConverters[$LastStreamType] $($StreamMessages | Out-String)
                         $StreamMessages = @()
                         $LastStreamType = $null
@@ -92,12 +92,18 @@ function Invoke-AzCommand {
                         
                         if (!$IsProgress) {
                             if ($LastStreamType -and $StreamType -and $StreamType -ne $LastStreamType -and $StreamMessages) {
-                                & $StreamConverters[$LastStreamType] $($StreamMessages | Out-String)
-                                $StreamMessages = @()
+                                if ($StreamType -eq 'ERROR') {
+                                    $StreamErrorMessages += $Message
+                                } else {
+                                    & $StreamConverters[$LastStreamType] $($StreamMessages | Out-String)
+                                    $StreamMessages = @()
+                                }
                             } 
 
-                            if (![string]::IsNullOrWhiteSpace($Message) -or $StreamType) {
+                            if ($StreamType -and $StreamType -ne 'ERROR') {
                                 $StreamMessages += $Message
+                            } else {
+                                $StreamErrorMessages += $Message
                             }
 
                             if ($StreamType) {
@@ -110,10 +116,28 @@ function Invoke-AzCommand {
         } finally {
             try {
                 if ($StreamMessages) {
-                    if (!$LastStreamType) {
-                        $LastStreamType = 'ERROR'
+                    if ($LastStreamType -eq 'ERROR') {
+                        $StreamErrorMessages += $StreamMessages
+                    } else {
+                        & $StreamConverters[$LastStreamType] $($StreamMessages | Out-String)
                     }
-                    & $StreamConverters[$LastStreamType] $($StreamMessages | Out-String)
+                }
+                
+                if ($StreamErrorMessages) {
+                    if ($Args) {
+                        $FirstArg = $Args | Where-Object {$_ -like '-*'} | Select-Object -First 1
+                        $FirstArgIndex = $Args.IndexOf($FirstArg)
+                        if ($FirstArgIndex -lt 0) {
+                            $FirstArgIndex = $Args.Length
+                        }
+                        $TargetCommand = $Args[0..($FirstArgIndex-1)]
+                    } else {
+                        $TargetCommand = @()
+                    }
+                    $Command = "az $($TargetCommand)"
+                    $Message = "$Command failed:`n$($StreamErrorMessages -join "`n")"
+                    $ErrorRecord = [System.Management.Automation.ErrorRecord]::new([System.Management.Automation.RemoteException]::new($Message), "NativeCommandErrorMessage", [System.Management.Automation.ErrorCategory]::NotSpecified, $Command)
+                    Write-Error -ErrorRecord $ErrorRecord -ErrorAction $_ErrorActionPreference
                 }
             } finally {
                 $DebugPreference = $_DebugPreference
