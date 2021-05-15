@@ -100,7 +100,7 @@ function Invoke-AzCommand {
                                 }
                             } 
 
-                            if ($StreamType -and $StreamType -ne 'ERROR') {
+                            if (!$StreamType -or $StreamType -ne 'ERROR') {
                                 $StreamMessages += $Message
                             } else {
                                 $StreamErrorMessages += $Message
