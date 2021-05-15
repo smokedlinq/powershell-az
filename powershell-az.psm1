@@ -6,36 +6,40 @@ $AzCommand = (Get-Command -Name az -CommandType Application | Select-Object -Fir
 
 New-Alias -Name az -Value Invoke-AzCommand -Force
 
+function Invoke-Az {
+    & $AzCommand $args *>&1
+}
+
 function Invoke-AzCommand {
     begin {
-        if ($DebugPreference -ne 'SilentlyContinue' -and !($Args | Where-Object {$_ -eq '--debug'})) {
-            $Args += '--debug'
-            $Args = $Args | Where-Object {$_ -ne '--only-show-errors'}
+        if ($DebugPreference -ne 'SilentlyContinue' -and !($args | Where-Object {$_ -eq '--debug'})) {
+            $args += '--debug'
+            $args = $args | Where-Object {$_ -ne '--only-show-errors'}
         } 
         
-        if ($VerbosePreference -ne 'SilentlyContinue' -and !($Args | Where-Object {$_ -eq '--verbose'})) {
-            $Args += '--verbose'
-            $Args = $Args | Where-Object {$_ -ne '--only-show-errors'}
+        if ($VerbosePreference -ne 'SilentlyContinue' -and !($args | Where-Object {$_ -eq '--verbose'})) {
+            $args += '--verbose'
+            $args = $args | Where-Object {$_ -ne '--only-show-errors'}
         }
 
         $_DebugPreference = $DebugPreference
         $_VerbosePreference = $VerbosePreference
 
-        if ($Args | Where-Object {$_ -eq '--debug'}) {
+        if ($args | Where-Object {$_ -eq '--debug'}) {
             $DebugPreference = 'Continue'
-            $Args = $Args | Where-Object {$_ -ne '--only-show-errors'}
+            $args = $args | Where-Object {$_ -ne '--only-show-errors'}
         }
         
-        if ($Args | Where-Object {$_ -eq '--verbose'}) {
+        if ($args | Where-Object {$_ -eq '--verbose'}) {
             $VerbosePreference = 'Continue'
-            $Args = $Args | Where-Object {$_ -ne '--only-show-errors'}
+            $args = $args | Where-Object {$_ -ne '--only-show-errors'}
         }
 
-        $IsJson = ($Args -notcontains '--output' -and $Args -notcontains '-o') -or ($Args -join ' ' -match '\b?(-o|--output)\s+jsonc?\b?')
-        $IsHelp = $Args -contains '-h' -or $Args -contains '--help'
+        $IsJson = ($args -notcontains '--output' -and $args -notcontains '-o') -or ($args -join ' ' -match '\b?(-o|--output)\s+jsonc?\b?')
+        $IsHelp = $args -contains '-h' -or $args -contains '--help'
         
         if ($env:TF_BUILD -or $env:GITHUB_ACTIONS) {
-            Write-Host "$($env:TF_BUILD ? '##[command]' : ($env:GITHUB_ACTIONS ? '::group::' : ''))az $(($Args | ForEach-Object {
+            Write-Host "$($env:TF_BUILD ? '##[command]' : ($env:GITHUB_ACTIONS ? '::group::' : ''))az $(($args | ForEach-Object {
                 if ($_ -match '\s') {
                     '"{0}"' -f ($_ -replace '"','\"')
                 } else {
@@ -54,14 +58,14 @@ function Invoke-AzCommand {
         $StreamErrorMessages = @()
         $StreamMessages = @()
         $StreamConverters = @{
-            'WARNING' = { Write-Warning -Message $Args[0] }
-            'INFO' = { Write-Verbose -Message $Args[0] }
-            'DEBUG' = { Write-Debug -Message $Args[0] }
-            'VERBOSE' = { Write-Verbose -Message $Args[0] }
+            'WARNING' = { Write-Warning -Message $args[0] }
+            'INFO' = { Write-Verbose -Message $args[0] }
+            'DEBUG' = { Write-Debug -Message $args[0] }
+            'VERBOSE' = { Write-Verbose -Message $args[0] }
         }
 
         try {
-            & $AzCommand @Args *>&1 | ForEach-Object {
+            Invoke-Az @Args | ForEach-Object {
                 $IsErrorRecord = $_ -is [System.Management.Automation.ErrorRecord]
 
                 if (!$IsErrorRecord) {
@@ -120,18 +124,18 @@ function Invoke-AzCommand {
                 }
                 
                 if ($StreamErrorMessages) {
-                    if ($Args) {
-                        $FirstArg = $Args | Where-Object {$_ -like '-*'} | Select-Object -First 1
-                        $FirstArgIndex = $Args.IndexOf($FirstArg)
+                    if ($args) {
+                        $FirstArg = $args | Where-Object {$_ -like '-*'} | Select-Object -First 1
+                        $FirstArgIndex = $args.IndexOf($FirstArg)
                         if ($FirstArgIndex -lt 0) {
-                            $FirstArgIndex = $Args.Length
+                            $FirstArgIndex = $args.Length
                         }
-                        $TargetCommand = $Args[0..($FirstArgIndex-1)]
+                        $TargetCommand = $args[0..($FirstArgIndex-1)]
                     } else {
                         $TargetCommand = @()
                     }
                     $Command = "az $($TargetCommand)"
-                    $Message = "$Command failed:`n$($StreamErrorMessages -join "`n")"
+                    $Message = "$Command failed: $($StreamErrorMessages -join "`n")"
                     $ErrorRecord = [System.Management.Automation.ErrorRecord]::new([System.Management.Automation.RemoteException]::new($Message), "NativeCommandErrorMessage", [System.Management.Automation.ErrorCategory]::NotSpecified, $Command)
                     Write-Error -ErrorRecord $ErrorRecord -ErrorAction $_ErrorActionPreference
                 }
@@ -149,7 +153,7 @@ function Invoke-AzCommand {
     end {
         if ($IsJson -and $OutputStream) {
             try {
-                $OutputStream | ConvertFrom-Json
+                $OutputStream | ConvertFrom-Json -AsHashtable
             } catch {
                 $OutputStream | Write-Output
             }
