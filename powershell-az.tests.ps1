@@ -67,6 +67,7 @@ Describe 'powershell-az.psm1' {
 
         It 'when ERROR error output then should Write-Error' {
             Mock -ModuleName powershell-az Invoke-Az { Out-Error 'ERROR: Message' }
+            $global:ErrorActionPreference = 'Continue'
             az command 2>&1 | Should -BeLike 'az command failed: Message*'
         }
 
