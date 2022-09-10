@@ -149,4 +149,12 @@ Describe 'powershell-az.psm1' {
             $Parameters.key.value | Should -Be 'value'
         }
     }
+
+    Context 'Get-AzUniqueString' {
+        It 'should compute deterministic values' {
+            'fu' | Get-AzUniqueString | Should -Be '6rkxbspxjmsho'
+            'fubar' | Get-AzUniqueString | Should -Be 'cj2xpqsiwjfne'
+            'fu','bar' | Get-AzUniqueString | Should -Be 'q5wxoscxs5j6k'
+        }
+    }
 }

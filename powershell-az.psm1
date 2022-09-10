@@ -250,3 +250,142 @@ function Out-AzDeploymentParameters {
         $Path
     }
 }
+
+function Get-AzUniqueString {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory, Position=0, ValueFromPipeline)]
+        [string] $InputObject,
+
+        [ValidateRange(1, [byte]::MaxValue)]
+        [byte] $Length = 13
+    )
+
+    begin {
+        $Strings = @()
+    }
+
+    process {
+        $Strings += $InputObject
+    }
+
+    end {
+        $Value = $Strings -join '-'
+
+        if ($Value.Length -gt 131072) {
+            throw 'Literal limit exceeded maximum length of 131,072 characters.'
+        }
+
+        [Azure.BuiltinFunctions]::UniqueString($Value)
+    }
+}
+
+$BuiltinFunctionsCSharp = @'
+using System;
+using System.Text;
+
+namespace Azure
+{
+    public static class BuiltinFunctions
+    {
+        public static string UniqueString(string text)
+        {
+            return Base32Encode(MurmurHash64(text));
+        }
+
+        private static string Base32Encode(ulong input)
+        {
+            string text = "abcdefghijklmnopqrstuvwxyz234567";
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < 13; i++)
+            {
+                stringBuilder.Append(text[(int)(input >> 59)]);
+                input <<= 5;
+            }
+            return stringBuilder.ToString();
+        }
+
+        private static ulong MurmurHash64(string str, uint seed = 0u)
+        {
+            return MurmurHash64(Encoding.UTF8.GetBytes(str), seed);
+        }
+
+        private static ulong MurmurHash64(byte[] data, uint seed = 0u)
+        {
+            int length = data.Length;
+            uint h1 = seed;
+            uint h2 = seed;
+            int index;
+            for (index = 0; index + 7 < length; index += 8)
+            {
+                uint k1 = (uint)(data[index] | (data[index + 1] << 8) | (data[index + 2] << 16) | (data[index + 3] << 24));
+                uint k3 = (uint)(data[index + 4] | (data[index + 5] << 8) | (data[index + 6] << 16) | (data[index + 7] << 24));
+                k1 *= 597399067;
+                k1 = k1.RotateLeft32(15);
+                k1 *= 2869860233u;
+                h1 ^= k1;
+                h1 = h1.RotateLeft32(19);
+                h1 += h2;
+                h1 = h1 * 5 + 1444728091;
+                k3 *= 2869860233u;
+                k3 = k3.RotateLeft32(17);
+                k3 *= 597399067;
+                h2 ^= k3;
+                h2 = h2.RotateLeft32(13);
+                h2 += h1;
+                h2 = h2 * 5 + 197830471;
+            }
+            int tail = length - index;
+            if (tail > 0)
+            {
+                uint k2 = ((tail >= 4) ? ((uint)(data[index] | (data[index + 1] << 8) | (data[index + 2] << 16) | (data[index + 3] << 24))) : (tail switch
+                {
+                    2 => (uint)(data[index] | (data[index + 1] << 8)), 
+                    3 => (uint)(data[index] | (data[index + 1] << 8) | (data[index + 2] << 16)), 
+                    _ => data[index], 
+                }));
+                k2 *= 597399067;
+                k2 = k2.RotateLeft32(15);
+                k2 *= 2869860233u;
+                h1 ^= k2;
+                if (tail > 4)
+                {
+                    uint k4 = (uint)(tail switch
+                    {
+                        6 => data[index + 4] | (data[index + 5] << 8), 
+                        7 => data[index + 4] | (data[index + 5] << 8) | (data[index + 6] << 16), 
+                        _ => data[index + 4], 
+                    } * -1425107063);
+                    k4 = k4.RotateLeft32(17);
+                    k4 *= 597399067;
+                    h2 ^= k4;
+                }
+            }
+            h1 ^= (uint)length;
+            h2 ^= (uint)length;
+            h1 += h2;
+            h2 += h1;
+            h1 ^= h1 >> 16;
+            h1 *= 2246822507u;
+            h1 ^= h1 >> 13;
+            h1 *= 3266489909u;
+            h1 ^= h1 >> 16;
+            h2 ^= h2 >> 16;
+            h2 *= 2246822507u;
+            h2 ^= h2 >> 13;
+            h2 *= 3266489909u;
+            h2 ^= h2 >> 16;
+            h1 += h2;
+            h2 += h1;
+            return ((ulong)h2 << 32) | h1;
+        }
+
+        private static uint RotateLeft32(this uint value, int count)
+        {
+            return (value << count) | (value >> 32 - count);
+        }
+    }
+}
+'@
+
+Add-Type -TypeDefinition $BuiltinFunctionsCSharp -Language CSharp

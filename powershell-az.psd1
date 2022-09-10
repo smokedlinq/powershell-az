@@ -8,6 +8,7 @@
     FunctionsToExport = @(
         'Invoke-AzCommand',
         'ConvertTo-AzJson',
+        'Get-AzUniqueString',
         'Out-AzJsonFile',
         'Out-AzDeploymentParameters'
     )
