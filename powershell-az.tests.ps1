@@ -97,14 +97,13 @@ Describe 'powershell-az.psm1' {
         }
 
         It 'with $PSNativeCommandArgumentPassing = Standard should encode JSON as string' {
-            $_PSNativeCommandArgumentPassing = $PSNativeCommandArgumentPassing
             $PSNativeCommandArgumentPassing = 'Standard'
             $Value = @{property='value'} | ConvertTo-AzJson
-            $PSNativeCommandArgumentPassing = $_PSNativeCommandArgumentPassing
             $Value | Should -Be '{"property":"value"}'
         }
 
         It 'with $PSNativeCommandArgumentPassing != Standard should encode JSON as string without quotes' {
+            $PSNativeCommandArgumentPassing = 'Legacy'
             $Value = @{property='value'} | ConvertTo-AzJson
             $Value | Should -Be '{\"property\":\"value\"}'
         }
