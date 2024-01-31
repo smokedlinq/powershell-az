@@ -2,6 +2,8 @@ name: publish
 
 on:
   push:
+    branches: 
+      - main
     paths:
       - powershell-az.psd1
 

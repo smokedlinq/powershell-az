@@ -182,7 +182,11 @@ function ConvertTo-AzJson {
     }
 
     end {
-        ($Items | ConvertTo-Json -AsArray:$AsArray -Compress -Depth $Depth | ConvertTo-Json) -replace '^"|"$'
+        if ($PSNativeCommandArgumentPassing -eq 'Standard') {
+            ($Items | ConvertTo-Json -AsArray:$AsArray -Compress -Depth $Depth)
+        } else {
+            ($Items | ConvertTo-Json -AsArray:$AsArray -Compress -Depth $Depth | ConvertTo-Json) -replace '^"|"$'
+        }
     }
 }
 
