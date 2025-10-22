@@ -12,7 +12,7 @@ function Invoke-Az {
 
 function Invoke-AzCommand {
     begin {
-        Write-Warning -Message "The 'az' alias function  'Invoke-AzCommand' is deprecated and will be removed in a future version." -Category 'Deprecation'
+        Write-Warning -Message "The 'az' alias function  'Invoke-AzCommand' is deprecated and will be removed in a future version."
 
         if ($DebugPreference -ne 'SilentlyContinue' -and !($args | Where-Object {$_ -eq '--debug'})) {
             $args += '--debug'
